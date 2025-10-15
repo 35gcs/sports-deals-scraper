@@ -387,7 +387,7 @@ def _save_deals_to_file(deals: List[Deal], output_path: Path) -> None:
     
     with open(output_path, 'w', encoding='utf-8') as f:
         for deal in deals:
-            deal_dict = deal.model_dump(mode='json', exclude_none=True)
+            deal_dict = deal.to_dict()
             f.write(json.dumps(deal_dict) + '\n')
 
 

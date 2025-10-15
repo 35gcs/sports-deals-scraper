@@ -1,11 +1,8 @@
-"""Newsletter generation system using Jinja2 templates."""
+"""Newsletter generation system that avoids external template dependencies."""
 
-import json
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-
-from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from .models import Deal, NewsletterConfig, Sport, Category
 from .ranker import DealRanker
@@ -19,20 +16,6 @@ class NewsletterGenerator:
         self.config = config
         self.ranker = DealRanker(min_discount=config.min_discount_pct)
         
-        # Set up Jinja2 environment
-        template_dir = Path(__file__).parent.parent / "templates" / "newsletter"
-        self.env = Environment(
-            loader=FileSystemLoader(template_dir),
-            autoescape=select_autoescape(['html', 'xml'])
-        )
-        
-        # Add custom filters
-        self.env.filters['format_price'] = self._format_price
-        self.env.filters['format_discount'] = self._format_discount
-        self.env.filters['format_date'] = self._format_date
-        self.env.filters['truncate'] = self._truncate_text
-        self.env.filters['safe_url'] = self._safe_url
-    
     def generate_newsletter(self, deals: List[Deal], week: str) -> Dict[str, str]:
         """Generate newsletter in all configured formats."""
         # Filter and rank deals
@@ -50,7 +33,7 @@ class NewsletterGenerator:
         
         if 'html' in self.config.formats:
             newsletters['html'] = self._generate_html(context)
-        
+
         if 'markdown' in self.config.formats:
             newsletters['markdown'] = self._generate_markdown(context)
         
@@ -136,13 +119,73 @@ class NewsletterGenerator:
     
     def _generate_html(self, context: Dict[str, Any]) -> str:
         """Generate HTML newsletter."""
-        template = self.env.get_template('newsletter.html')
-        return template.render(**context)
-    
+        lines = [
+            "<html>",
+            "  <head>",
+            f"    <title>{context['title']} - Week {context['week']}</title>",
+            "  </head>",
+            "  <body>",
+            f"    <h1>{context['title']}</h1>",
+        ]
+
+        if context.get('subtitle'):
+            lines.append(f"    <h2>{context['subtitle']}</h2>")
+
+        lines.append(f"    <p><strong>Week {context['week']}</strong></p>")
+        lines.append("    <section>")
+        lines.append("      <h3>Highlights</h3>")
+        lines.append("      <ul>")
+        lines.append(f"        <li>Total deals: {context['total_deals']}</li>")
+        lines.append(f"        <li>Youth deals: {context['youth_deals']}</li>")
+        lines.append(f"        <li>Average discount: {context['avg_discount']:.1f}%</li>")
+        lines.append(f"        <li>Average price: ${context['avg_price']:.2f}</li>")
+        lines.append("      </ul>")
+        lines.append("    </section>")
+
+        for sport_key, group in context['grouped_deals'].items():
+            lines.append(f"    <section>")
+            lines.append(f"      <h2>{sport_key.title()}</h2>")
+
+            if 'categories' in group:
+                for category, deals in group['categories'].items():
+                    lines.append(f"      <h3>{category.title()}</h3>")
+                    lines.extend(self._html_deal_list(deals))
+            elif 'deals' in group:
+                lines.extend(self._html_deal_list(group['deals']))
+
+            lines.append("    </section>")
+
+        lines.append("  </body>")
+        lines.append("</html>")
+        return "\n".join(lines)
+
     def _generate_markdown(self, context: Dict[str, Any]) -> str:
         """Generate Markdown newsletter."""
-        template = self.env.get_template('newsletter.md')
-        return template.render(**context)
+        lines = [f"# {context['title']}"]
+
+        if context.get('subtitle'):
+            lines.append(f"## {context['subtitle']}")
+
+        lines.append(f"**Week {context['week']}**")
+        lines.append("")
+        lines.append("### Highlights")
+        lines.append(f"- Total deals: {context['total_deals']}")
+        lines.append(f"- Youth deals: {context['youth_deals']}")
+        lines.append(f"- Average discount: {context['avg_discount']:.1f}%")
+        lines.append(f"- Average price: ${context['avg_price']:.2f}")
+        lines.append("")
+
+        for sport_key, group in context['grouped_deals'].items():
+            lines.append(f"## {sport_key.title()}")
+            if 'categories' in group:
+                for category, deals in group['categories'].items():
+                    lines.append(f"### {category.title()}")
+                    lines.extend(self._markdown_deal_list(deals))
+            elif 'deals' in group:
+                lines.extend(self._markdown_deal_list(group['deals']))
+            lines.append("")
+
+        return "\n".join(lines)
     
     def save_newsletter(self, newsletters: Dict[str, str], week: str) -> Dict[str, Path]:
         """Save newsletters to files."""
@@ -161,90 +204,120 @@ class NewsletterGenerator:
             saved_files[format_name] = filepath
         
         return saved_files
-    
+
+    def _html_deal_list(self, deals: List[Deal]) -> List[str]:
+        lines = ["      <ul>"]
+        for deal in deals:
+            price = self._format_price(float(deal.price))
+            discount = self._format_discount(deal.discount_pct)
+            lines.append(
+                f"        <li><strong>{deal.title}</strong> - {price} ({discount}) at {deal.retailer}</li>"
+            )
+        lines.append("      </ul>")
+        return lines
+
+    def _markdown_deal_list(self, deals: List[Deal]) -> List[str]:
+        lines: List[str] = []
+        for deal in deals:
+            price = self._format_price(float(deal.price))
+            discount = self._format_discount(deal.discount_pct)
+            lines.append(
+                f"- **{deal.title}** — {price} ({discount}) at {deal.retailer}"
+            )
+        return lines
+
     def _format_price(self, price: float) -> str:
         """Format price for display."""
         return f"${price:.2f}"
-    
-    def _format_discount(self, discount: float) -> str:
+
+    def _format_discount(self, discount: Optional[float]) -> str:
         """Format discount percentage."""
+        if discount is None:
+            return "N/A"
         return f"{discount:.0f}%"
-    
-    def _format_date(self, date: datetime) -> str:
-        """Format date for display."""
-        return date.strftime("%B %d, %Y")
-    
-    def _truncate_text(self, text: str, length: int = 100) -> str:
-        """Truncate text to specified length."""
-        if len(text) <= length:
-            return text
-        return text[:length-3] + "..."
-    
-    def _safe_url(self, url: str) -> str:
-        """Ensure URL is safe for use in templates."""
-        if not url:
-            return "#"
-        return str(url)
+
     
     def generate_deal_card_html(self, deal: Deal) -> str:
         """Generate HTML for a single deal card."""
-        template = self.env.get_template('deal_card.html')
-        return template.render(deal=deal)
+        return (
+            f"<div class=\"deal-card\">"
+            f"<h3>{deal.title}</h3>"
+            f"<p><strong>Price:</strong> ${float(deal.price):.2f}</p>"
+            f"<p><strong>Retailer:</strong> {deal.retailer}</p>"
+            "</div>"
+        )
     
     def generate_deal_card_markdown(self, deal: Deal) -> str:
         """Generate Markdown for a single deal card."""
-        template = self.env.get_template('deal_card.md')
-        return template.render(deal=deal)
+        lines = [f"### {deal.title}"]
+        lines.append(f"- Price: ${float(deal.price):.2f}")
+        lines.append(f"- Retailer: {deal.retailer}")
+        return "\n".join(lines)
     
     def generate_sport_section_html(self, sport: str, deals: List[Deal]) -> str:
         """Generate HTML for a sport section."""
-        template = self.env.get_template('sport_section.html')
-        return template.render(sport=sport, deals=deals)
+        lines = [f"<section><h2>{sport}</h2>"]
+        lines.extend(self._html_deal_list(deals))
+        lines.append("</section>")
+        return "\n".join(lines)
     
     def generate_sport_section_markdown(self, sport: str, deals: List[Deal]) -> str:
         """Generate Markdown for a sport section."""
-        template = self.env.get_template('sport_section.md')
-        return template.render(sport=sport, deals=deals)
+        lines = [f"## {sport}"]
+        lines.extend(self._markdown_deal_list(deals))
+        return "\n".join(lines)
     
     def generate_category_section_html(self, category: str, deals: List[Deal]) -> str:
         """Generate HTML for a category section."""
-        template = self.env.get_template('category_section.html')
-        return template.render(category=category, deals=deals)
+        lines = [f"<section><h3>{category}</h3>"]
+        lines.extend(self._html_deal_list(deals))
+        lines.append("</section>")
+        return "\n".join(lines)
     
     def generate_category_section_markdown(self, category: str, deals: List[Deal]) -> str:
         """Generate Markdown for a category section."""
-        template = self.env.get_template('category_section.md')
-        return template.render(category=category, deals=deals)
+        lines = [f"### {category}"]
+        lines.extend(self._markdown_deal_list(deals))
+        return "\n".join(lines)
     
     def generate_summary_html(self, summary: Dict[str, Any]) -> str:
         """Generate HTML for newsletter summary."""
-        template = self.env.get_template('summary.html')
-        return template.render(summary=summary)
+        lines = ["<section>"]
+        lines.append("  <h2>Summary</h2>")
+        lines.append("  <ul>")
+        for key, value in summary.items():
+            lines.append(f"    <li>{key.replace('_', ' ').title()}: {value}</li>")
+        lines.append("  </ul>")
+        lines.append("</section>")
+        return "\n".join(lines)
     
     def generate_summary_markdown(self, summary: Dict[str, Any]) -> str:
         """Generate Markdown for newsletter summary."""
-        template = self.env.get_template('summary.md')
-        return template.render(summary=summary)
+        lines = ["## Summary"]
+        for key, value in summary.items():
+            lines.append(f"- {key.replace('_', ' ').title()}: {value}")
+        return "\n".join(lines)
     
     def generate_header_html(self, title: str, subtitle: Optional[str], week: str) -> str:
         """Generate HTML for newsletter header."""
-        template = self.env.get_template('header.html')
-        return template.render(title=title, subtitle=subtitle, week=week)
+        subtitle_html = f"<p>{subtitle}</p>" if subtitle else ""
+        return f"<header><h1>{title}</h1>{subtitle_html}<p>Week {week}</p></header>"
     
     def generate_header_markdown(self, title: str, subtitle: Optional[str], week: str) -> str:
         """Generate Markdown for newsletter header."""
-        template = self.env.get_template('header.md')
-        return template.render(title=title, subtitle=subtitle, week=week)
+        lines = [f"# {title}"]
+        if subtitle:
+            lines.append(f"## {subtitle}")
+        lines.append(f"**Week {week}**")
+        return "\n".join(lines)
     
     def generate_footer_html(self) -> str:
         """Generate HTML for newsletter footer."""
-        template = self.env.get_template('footer.html')
-        return template.render()
+        return "<footer><p>Generated by Sports Deals Scraper</p></footer>"
     
     def generate_footer_markdown(self) -> str:
         """Generate Markdown for newsletter footer."""
-        template = self.env.get_template('footer.md')
-        return template.render()
+        return "---\nGenerated by Sports Deals Scraper"
     
     def generate_newsletter_preview(self, deals: List[Deal], week: str) -> str:
         """Generate a preview of the newsletter."""
