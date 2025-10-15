@@ -1,0 +1,39 @@
+{
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "Nike Youth Soccer Cleats",
+    "description": "High-quality youth soccer cleats designed for young athletes",
+    "brand": {
+        "@type": "Brand",
+        "name": "Nike"
+    },
+    "sku": "NIKE-YOUTH-CLEATS-001",
+    "gtin": "1234567890123",
+    "mpn": "NIKE-YC-001",
+    "image": [
+        "https://example.com/images/nike-youth-cleats-1.jpg",
+        "https://example.com/images/nike-youth-cleats-2.jpg"
+    ],
+    "offers": {
+        "@type": "Offer",
+        "price": "40.00",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock",
+        "seller": {
+            "@type": "Organization",
+            "name": "Dick's Sporting Goods"
+        },
+        "validFrom": "2024-01-01",
+        "validThrough": "2024-12-31"
+    },
+    "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.5",
+        "reviewCount": "128"
+    },
+    "category": "Footwear",
+    "audience": {
+        "@type": "Audience",
+        "audienceType": "Youth"
+    }
+}

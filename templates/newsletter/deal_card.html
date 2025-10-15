@@ -1,0 +1,57 @@
+<div class="deal-card">
+    {% if deal.image_url and config.include_images %}
+    <img src="{{ deal.image_url|safe_url }}" alt="{{ deal.title }}" class="deal-image">
+    {% endif %}
+    <div class="deal-content">
+        <h4 class="deal-title">
+            {{ deal.title|truncate(60) }}
+            {% if deal.youth_flag %}
+            <span class="youth-badge">YOUTH</span>
+            {% endif %}
+            {% if deal.stock_level == 'limited' %}
+            <span class="limited-stock">LIMITED</span>
+            {% endif %}
+        </h4>
+        
+        {% if deal.brand %}
+        <p class="deal-brand">{{ deal.brand }}</p>
+        {% endif %}
+        
+        <div class="deal-pricing">
+            <span class="deal-price">{{ deal.price|format_price }}</span>
+            {% if deal.msrp %}
+            <span class="deal-msrp">{{ deal.msrp|format_price }}</span>
+            {% endif %}
+            {% if deal.discount_pct %}
+            <span class="deal-discount">-{{ deal.discount_pct|format_discount }}</span>
+            {% endif %}
+        </div>
+        
+        {% if deal.sizes %}
+        <div class="deal-sizes">
+            {% for size in deal.sizes[:5] %}
+            <span class="size-tag">{{ size }}</span>
+            {% endfor %}
+            {% if deal.sizes|length > 5 %}
+            <span class="size-tag">+{{ deal.sizes|length - 5 }} more</span>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <p class="deal-retailer">📍 {{ deal.retailer }}</p>
+        
+        {% if deal.coupon_code and config.include_coupons %}
+        <div class="deal-coupon">🎟️ Code: {{ deal.coupon_code }}</div>
+        {% endif %}
+        
+        {% if deal.alternate_retailers %}
+        <div class="deal-alternates">
+            <strong>Also at:</strong> {{ deal.alternate_retailers|join(', ') }}
+        </div>
+        {% endif %}
+        
+        <a href="{{ deal.canonical_url|safe_url }}" class="deal-cta" target="_blank">
+            View Deal →
+        </a>
+    </div>
+</div>

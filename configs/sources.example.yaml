@@ -1,0 +1,235 @@
+# Example configuration file for sports deals scraper
+# Copy this file to sources.yaml and customize for your needs
+
+retailers:
+  - name: "Dick's Sporting Goods"
+    base_url: "https://www.dickssportinggoods.com/c/sale"
+    enabled: true
+    requires_js: true
+    selectors:
+      item: ".product-card, .product-tile"
+      title: ".product-title, .product-name"
+      price: ".price .sale-price, .price .current-price"
+      msrp: ".price .was-price, .price .original-price"
+      url: "a::attr(href)"
+      image: "img::attr(src)"
+      brand: ".brand-name, .product-brand"
+      sizes: ".size-selector, .available-sizes"
+      stock: ".stock-status, .availability"
+    pagination:
+      type: "page_param"
+      param: "page"
+      start: 1
+      max_pages: 10
+    sport: "multi"
+    category_hints: ["footwear", "apparel", "protective", "equipment", "bags", "accessories"]
+    youth_keywords: ["youth", "jr", "junior", "kids", "boy", "girl"]
+    rate_limit:
+      requests_per_minute: 8
+      burst: 2
+    timeout_seconds: 30
+    min_items_per_page: 5
+    max_pages: 15
+
+  - name: "Academy Sports + Outdoors"
+    base_url: "https://www.academy.com/shop/browse/sale"
+    enabled: true
+    requires_js: true
+    selectors:
+      item: ".product-card, .product-tile"
+      title: ".product-title, .product-name"
+      price: ".price .sale-price, .price .current-price"
+      msrp: ".price .was-price, .price .original-price"
+      url: "a::attr(href)"
+      image: "img::attr(src)"
+      brand: ".brand-name, .product-brand"
+      sizes: ".size-selector, .available-sizes"
+      stock: ".stock-status, .availability"
+    pagination:
+      type: "page_param"
+      param: "page"
+      start: 1
+      max_pages: 10
+    sport: "multi"
+    category_hints: ["footwear", "apparel", "protective", "equipment", "bags", "accessories"]
+    youth_keywords: ["youth", "jr", "junior", "kids", "boy", "girl"]
+    rate_limit:
+      requests_per_minute: 8
+      burst: 2
+    timeout_seconds: 30
+    min_items_per_page: 5
+    max_pages: 15
+
+  - name: "Nike"
+    base_url: "https://www.nike.com/sale"
+    enabled: true
+    requires_js: true
+    selectors:
+      item: ".product-card, .product-tile"
+      title: ".product-title, .product-name"
+      price: ".price .sale-price, .price .current-price"
+      msrp: ".price .was-price, .price .original-price"
+      url: "a::attr(href)"
+      image: "img::attr(src)"
+      brand: ".brand-name, .product-brand"
+      sizes: ".size-selector, .available-sizes"
+      stock: ".stock-status, .availability"
+    pagination:
+      type: "page_param"
+      param: "page"
+      start: 1
+      max_pages: 10
+    sport: "multi"
+    category_hints: ["footwear", "apparel", "protective", "equipment", "bags", "accessories"]
+    youth_keywords: ["youth", "jr", "junior", "kids", "boy", "girl"]
+    rate_limit:
+      requests_per_minute: 6
+      burst: 2
+    timeout_seconds: 30
+    min_items_per_page: 5
+    max_pages: 15
+
+  - name: "Adidas"
+    base_url: "https://www.adidas.com/us/sale"
+    enabled: true
+    requires_js: true
+    selectors:
+      item: ".product-card, .product-tile"
+      title: ".product-title, .product-name"
+      price: ".price .sale-price, .price .current-price"
+      msrp: ".price .was-price, .price .original-price"
+      url: "a::attr(href)"
+      image: "img::attr(src)"
+      brand: ".brand-name, .product-brand"
+      sizes: ".size-selector, .available-sizes"
+      stock: ".stock-status, .availability"
+    pagination:
+      type: "page_param"
+      param: "page"
+      start: 1
+      max_pages: 10
+    sport: "multi"
+    category_hints: ["footwear", "apparel", "protective", "equipment", "bags", "accessories"]
+    youth_keywords: ["youth", "jr", "junior", "kids", "boy", "girl"]
+    rate_limit:
+      requests_per_minute: 6
+      burst: 2
+    timeout_seconds: 30
+    min_items_per_page: 5
+    max_pages: 15
+
+  - name: "Soccer.com"
+    base_url: "https://www.soccer.com/category/sale/youth"
+    enabled: true
+    requires_js: true
+    selectors:
+      item: ".product-card, .product-tile"
+      title: ".product-title, .product-name"
+      price: ".price .sale-price, .price .current-price"
+      msrp: ".price .was-price, .price .original-price"
+      url: "a::attr(href)"
+      image: "img::attr(src)"
+      brand: ".brand-name, .product-brand"
+      sizes: ".size-selector, .available-sizes"
+      stock: ".stock-status, .availability"
+    pagination:
+      type: "page_param"
+      param: "page"
+      start: 1
+      max_pages: 10
+    sport: "soccer"
+    category_hints: ["footwear", "apparel", "protective", "equipment", "bags", "accessories"]
+    youth_keywords: ["youth", "jr", "junior", "kids", "boy", "girl"]
+    rate_limit:
+      requests_per_minute: 8
+      burst: 2
+    timeout_seconds: 30
+    min_items_per_page: 5
+    max_pages: 15
+
+  - name: "HockeyMonkey"
+    base_url: "https://www.hockeymonkey.com/sale"
+    enabled: true
+    requires_js: true
+    selectors:
+      item: ".product-card, .product-tile"
+      title: ".product-title, .product-name"
+      price: ".price .sale-price, .price .current-price"
+      msrp: ".price .was-price, .price .original-price"
+      url: "a::attr(href)"
+      image: "img::attr(src)"
+      brand: ".brand-name, .product-brand"
+      sizes: ".size-selector, .available-sizes"
+      stock: ".stock-status, .availability"
+    pagination:
+      type: "page_param"
+      param: "page"
+      start: 1
+      max_pages: 10
+    sport: "hockey"
+    category_hints: ["footwear", "apparel", "protective", "equipment", "bags", "accessories"]
+    youth_keywords: ["youth", "jr", "junior", "kids", "boy", "girl"]
+    rate_limit:
+      requests_per_minute: 8
+      burst: 2
+    timeout_seconds: 30
+    min_items_per_page: 5
+    max_pages: 15
+
+  - name: "BaseballMonkey"
+    base_url: "https://www.baseballmonkey.com/sale"
+    enabled: true
+    requires_js: true
+    selectors:
+      item: ".product-card, .product-tile"
+      title: ".product-title, .product-name"
+      price: ".price .sale-price, .price .current-price"
+      msrp: ".price .was-price, .price .original-price"
+      url: "a::attr(href)"
+      image: "img::attr(src)"
+      brand: ".brand-name, .product-brand"
+      sizes: ".size-selector, .available-sizes"
+      stock: ".stock-status, .availability"
+    pagination:
+      type: "page_param"
+      param: "page"
+      start: 1
+      max_pages: 10
+    sport: "baseball"
+    category_hints: ["footwear", "apparel", "protective", "equipment", "bags", "accessories"]
+    youth_keywords: ["youth", "jr", "junior", "kids", "boy", "girl"]
+    rate_limit:
+      requests_per_minute: 8
+      burst: 2
+    timeout_seconds: 30
+    min_items_per_page: 5
+    max_pages: 15
+
+  - name: "LacrosseMonkey"
+    base_url: "https://www.lacrossemonkey.com/sale"
+    enabled: true
+    requires_js: true
+    selectors:
+      item: ".product-card, .product-tile"
+      title: ".product-title, .product-name"
+      price: ".price .sale-price, .price .current-price"
+      msrp: ".price .was-price, .price .original-price"
+      url: "a::attr(href)"
+      image: "img::attr(src)"
+      brand: ".brand-name, .product-brand"
+      sizes: ".size-selector, .available-sizes"
+      stock: ".stock-status, .availability"
+    pagination:
+      type: "page_param"
+      param: "page"
+      start: 1
+      max_pages: 10
+    sport: "lacrosse"
+    category_hints: ["footwear", "apparel", "protective", "equipment", "bags", "accessories"]
+    youth_keywords: ["youth", "jr", "junior", "kids", "boy", "girl"]
+    rate_limit:
+      requests_per_minute: 8
+      burst: 2
+    timeout_seconds: 30
+    min_items_per_page: 5
+    max_pages: 15

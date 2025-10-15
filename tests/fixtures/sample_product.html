@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sample Product Page</title>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "Nike Youth Soccer Cleats",
+        "brand": {
+            "@type": "Brand",
+            "name": "Nike"
+        },
+        "sku": "NIKE-YOUTH-CLEATS-001",
+        "gtin": "1234567890123",
+        "image": "https://example.com/images/nike-youth-cleats.jpg",
+        "offers": {
+            "@type": "Offer",
+            "price": "40.00",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div class="product-page">
+        <div class="product-card">
+            <img src="https://example.com/images/nike-youth-cleats.jpg" alt="Nike Youth Soccer Cleats" class="product-image">
+            <div class="product-info">
+                <h1 class="product-title">Nike Youth Soccer Cleats</h1>
+                <div class="brand-name">Nike</div>
+                <div class="price-section">
+                    <span class="sale-price">$40.00</span>
+                    <span class="was-price">$80.00</span>
+                    <span class="discount-badge">50% OFF</span>
+                </div>
+                <div class="size-selector">
+                    <span class="size-option">YS</span>
+                    <span class="size-option">YM</span>
+                    <span class="size-option">YL</span>
+                    <span class="size-option">YXL</span>
+                </div>
+                <div class="stock-status">In Stock</div>
+                <div class="coupon-code">Use code SAVE20 for additional 20% off</div>
+                <a href="/product/nike-youth-cleats" class="product-link">View Product</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

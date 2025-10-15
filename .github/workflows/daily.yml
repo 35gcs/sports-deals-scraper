@@ -1,0 +1,80 @@
+name: Daily Deals Fetch
+
+on:
+  schedule:
+    # Run daily at 1:05 PM ET (18:05 UTC)
+    - cron: '5 18 * * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  fetch-deals:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: latest
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+        
+    - name: Load cached venv
+      id: cached-poetry-dependencies
+      uses: actions/cache@v3
+      with:
+        path: .venv
+        key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+        
+    - name: Install dependencies
+      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+      run: poetry install --no-interaction --no-root
+      
+    - name: Install project
+      run: poetry install --no-interaction
+      
+    - name: Install Playwright browsers
+      run: poetry run playwright install --with-deps
+      
+    - name: Create data directory
+      run: mkdir -p data
+      
+    - name: Fetch deals from all sources
+      run: |
+        poetry run deals fetch --sources all --output data/deals-$(date +%Y-%m-%d).jsonl
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        
+    - name: Rank deals
+      run: |
+        poetry run deals rank --min-discount 30 --output data/top-deals-$(date +%Y-%m-%d).jsonl
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        
+    - name: Upload deals data
+      uses: actions/upload-artifact@v3
+      with:
+        name: deals-data-${{ github.run_number }}
+        path: |
+          data/*.jsonl
+          data/*.db
+        retention-days: 7
+        
+    - name: Show summary
+      run: |
+        poetry run deals stats
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        
+    - name: Clean up old data
+      run: |
+        # Keep only last 7 days of data files
+        find data -name "*.jsonl" -mtime +7 -delete
+      continue-on-error: true

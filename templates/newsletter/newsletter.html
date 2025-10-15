@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Week {{ week }}</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+        
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin: 0;
+        }
+        
+        .header .week {
+            font-size: 1em;
+            opacity: 0.8;
+            margin: 10px 0 0 0;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .summary {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .summary h3 {
+            margin: 0 0 15px 0;
+            color: #667eea;
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .sport-section {
+            margin-bottom: 40px;
+        }
+        
+        .sport-header {
+            background-color: #667eea;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px 8px 0 0;
+            margin: 0;
+        }
+        
+        .sport-header h2 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+        
+        .category-section {
+            margin-bottom: 25px;
+        }
+        
+        .category-header {
+            background-color: #e9ecef;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin: 0 0 15px 0;
+        }
+        
+        .category-header h3 {
+            margin: 0;
+            color: #495057;
+            font-size: 1.2em;
+        }
+        
+        .deals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .deal-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .deal-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .deal-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background-color: #f8f9fa;
+        }
+        
+        .deal-content {
+            padding: 15px;
+        }
+        
+        .deal-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            line-height: 1.4;
+        }
+        
+        .deal-brand {
+            color: #666;
+            font-size: 0.9em;
+            margin: 0 0 8px 0;
+        }
+        
+        .deal-pricing {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .deal-price {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #28a745;
+        }
+        
+        .deal-msrp {
+            font-size: 1em;
+            color: #999;
+            text-decoration: line-through;
+        }
+        
+        .deal-discount {
+            background-color: #dc3545;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .deal-details {
+            font-size: 0.9em;
+            color: #666;
+            margin: 8px 0;
+        }
+        
+        .deal-sizes {
+            margin: 8px 0;
+        }
+        
+        .deal-sizes .size-tag {
+            display: inline-block;
+            background-color: #e9ecef;
+            color: #495057;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin: 2px;
+        }
+        
+        .deal-retailer {
+            font-size: 0.9em;
+            color: #667eea;
+            font-weight: 600;
+            margin: 8px 0;
+        }
+        
+        .deal-coupon {
+            background-color: #ffc107;
+            color: #212529;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin: 8px 0;
+            display: inline-block;
+        }
+        
+        .deal-cta {
+            background-color: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+            margin: 10px 0;
+            transition: background-color 0.2s;
+        }
+        
+        .deal-cta:hover {
+            background-color: #5a6fd8;
+        }
+        
+        .deal-alternates {
+            font-size: 0.8em;
+            color: #666;
+            margin: 8px 0;
+        }
+        
+        .deal-alternates strong {
+            color: #495057;
+        }
+        
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px 30px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .footer p {
+            margin: 5px 0;
+        }
+        
+        .youth-badge {
+            background-color: #17a2b8;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.7em;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        
+        .limited-stock {
+            background-color: #fd7e14;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.7em;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .deals-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{{ title }}</h1>
+            {% if subtitle %}
+            <p class="subtitle">{{ subtitle }}</p>
+            {% endif %}
+            <p class="week">Week {{ week }}</p>
+        </div>
+        
+        <div class="content">
+            {% if summary %}
+            <div class="summary">
+                <h3>📊 This Week's Highlights</h3>
+                <div class="summary-stats">
+                    <div class="stat">
+                        <div class="stat-value">{{ summary.total_deals }}</div>
+                        <div class="stat-label">Total Deals</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">{{ summary.youth_deals }}</div>
+                        <div class="stat-label">Youth Items</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">{{ summary.avg_discount }}%</div>
+                        <div class="stat-label">Avg Discount</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">${{ summary.avg_price }}</div>
+                        <div class="stat-label">Avg Price</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% for sport, group in grouped_deals.items() %}
+            <div class="sport-section">
+                <div class="sport-header">
+                    <h2>🏈 {{ sport|title }} Deals</h2>
+                </div>
+                
+                {% if group.categories %}
+                    {% for category, deals in group.categories.items() %}
+                    <div class="category-section">
+                        <div class="category-header">
+                            <h3>{{ category|title }}</h3>
+                        </div>
+                        <div class="deals-grid">
+                            {% for deal in deals %}
+                            <div class="deal-card">
+                                {% if deal.image_url and config.include_images %}
+                                <img src="{{ deal.image_url|safe_url }}" alt="{{ deal.title }}" class="deal-image">
+                                {% endif %}
+                                <div class="deal-content">
+                                    <h4 class="deal-title">
+                                        {{ deal.title|truncate(60) }}
+                                        {% if deal.youth_flag %}
+                                        <span class="youth-badge">YOUTH</span>
+                                        {% endif %}
+                                        {% if deal.stock_level == 'limited' %}
+                                        <span class="limited-stock">LIMITED</span>
+                                        {% endif %}
+                                    </h4>
+                                    
+                                    {% if deal.brand %}
+                                    <p class="deal-brand">{{ deal.brand }}</p>
+                                    {% endif %}
+                                    
+                                    <div class="deal-pricing">
+                                        <span class="deal-price">{{ deal.price|format_price }}</span>
+                                        {% if deal.msrp %}
+                                        <span class="deal-msrp">{{ deal.msrp|format_price }}</span>
+                                        {% endif %}
+                                        {% if deal.discount_pct %}
+                                        <span class="deal-discount">-{{ deal.discount_pct|format_discount }}</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% if deal.sizes %}
+                                    <div class="deal-sizes">
+                                        {% for size in deal.sizes[:5] %}
+                                        <span class="size-tag">{{ size }}</span>
+                                        {% endfor %}
+                                        {% if deal.sizes|length > 5 %}
+                                        <span class="size-tag">+{{ deal.sizes|length - 5 }} more</span>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <p class="deal-retailer">📍 {{ deal.retailer }}</p>
+                                    
+                                    {% if deal.coupon_code and config.include_coupons %}
+                                    <div class="deal-coupon">🎟️ Code: {{ deal.coupon_code }}</div>
+                                    {% endif %}
+                                    
+                                    {% if deal.alternate_retailers %}
+                                    <div class="deal-alternates">
+                                        <strong>Also at:</strong> {{ deal.alternate_retailers|join(', ') }}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <a href="{{ deal.canonical_url|safe_url }}" class="deal-cta" target="_blank">
+                                        View Deal →
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="deals-grid">
+                        {% for deal in group.deals %}
+                        <div class="deal-card">
+                            {% if deal.image_url and config.include_images %}
+                            <img src="{{ deal.image_url|safe_url }}" alt="{{ deal.title }}" class="deal-image">
+                            {% endif %}
+                            <div class="deal-content">
+                                <h4 class="deal-title">
+                                    {{ deal.title|truncate(60) }}
+                                    {% if deal.youth_flag %}
+                                    <span class="youth-badge">YOUTH</span>
+                                    {% endif %}
+                                    {% if deal.stock_level == 'limited' %}
+                                    <span class="limited-stock">LIMITED</span>
+                                    {% endif %}
+                                </h4>
+                                
+                                {% if deal.brand %}
+                                <p class="deal-brand">{{ deal.brand }}</p>
+                                {% endif %}
+                                
+                                <div class="deal-pricing">
+                                    <span class="deal-price">{{ deal.price|format_price }}</span>
+                                    {% if deal.msrp %}
+                                    <span class="deal-msrp">{{ deal.msrp|format_price }}</span>
+                                    {% endif %}
+                                    {% if deal.discount_pct %}
+                                    <span class="deal-discount">-{{ deal.discount_pct|format_discount }}</span>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if deal.sizes %}
+                                <div class="deal-sizes">
+                                    {% for size in deal.sizes[:5] %}
+                                    <span class="size-tag">{{ size }}</span>
+                                    {% endfor %}
+                                    {% if deal.sizes|length > 5 %}
+                                    <span class="size-tag">+{{ deal.sizes|length - 5 }} more</span>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                                
+                                <p class="deal-retailer">📍 {{ deal.retailer }}</p>
+                                
+                                {% if deal.coupon_code and config.include_coupons %}
+                                <div class="deal-coupon">🎟️ Code: {{ deal.coupon_code }}</div>
+                                {% endif %}
+                                
+                                {% if deal.alternate_retailers %}
+                                <div class="deal-alternates">
+                                    <strong>Also at:</strong> {{ deal.alternate_retailers|join(', ') }}
+                                </div>
+                                {% endif %}
+                                
+                                <a href="{{ deal.canonical_url|safe_url }}" class="deal-cta" target="_blank">
+                                    View Deal →
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="footer">
+            <p><strong>{{ title }}</strong></p>
+            <p>Generated on {{ generated_at|format_date }}</p>
+            <p>Week {{ week }} • {{ total_deals }} deals found</p>
+            <p><em>Prices and availability subject to change. Always verify details on retailer websites.</em></p>
+        </div>
+    </div>
+</body>
+</html>
