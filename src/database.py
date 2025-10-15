@@ -42,14 +42,7 @@ class DatabaseManager:
     def save_deal(self, deal: Deal) -> bool:
         """Save a deal to the database."""
         try:
-            deal_dict = deal.model_dump(mode='json', exclude_none=True)
-            
-            # Convert datetime objects to ISO strings for JSON serialization
-            for key, value in deal_dict.items():
-                if isinstance(value, datetime):
-                    deal_dict[key] = value.isoformat()
-                elif hasattr(value, 'url'):  # HttpUrl objects
-                    deal_dict[key] = str(value)
+            deal_dict = deal.to_dict()
             
             # Use upsert to handle duplicates
             self.db['deals'].upsert(deal_dict, ['id'])
@@ -151,8 +144,7 @@ class DatabaseManager:
     def save_price_history(self, price_history: PriceHistory) -> bool:
         """Save price history entry."""
         try:
-            history_dict = price_history.model_dump(mode='json', exclude_none=True)
-            history_dict['timestamp'] = history_dict['timestamp'].isoformat()
+            history_dict = price_history.to_dict()
             self.db['price_history'].insert(history_dict)
             return True
         except Exception as e:
@@ -175,10 +167,7 @@ class DatabaseManager:
     def save_scraping_session(self, session: ScrapingSession) -> bool:
         """Save scraping session metadata."""
         try:
-            session_dict = session.model_dump(mode='json', exclude_none=True)
-            session_dict['started_at'] = session_dict['started_at'].isoformat()
-            if session_dict.get('ended_at'):
-                session_dict['ended_at'] = session_dict['ended_at'].isoformat()
+            session_dict = session.to_dict()
             self.db['scraping_sessions'].upsert(session_dict, ['session_id'])
             return True
         except Exception as e:

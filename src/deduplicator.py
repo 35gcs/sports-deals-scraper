@@ -1,10 +1,8 @@
 """Deal deduplication system to identify and merge duplicate products."""
 
 import hashlib
+from difflib import SequenceMatcher
 from typing import Dict, List, Optional, Set, Tuple
-
-from fuzzywuzzy import fuzz
-from fuzzywuzzy import process
 
 from .models import Deal
 
@@ -109,7 +107,7 @@ class DealDeduplicator:
             return False
         
         # Check title similarity
-        title_similarity = fuzz.ratio(deal1.title.lower(), deal2.title.lower())
+        title_similarity = int(SequenceMatcher(None, deal1.title.lower(), deal2.title.lower()).ratio() * 100)
         if title_similarity < self.similarity_threshold * 100:
             return False
         

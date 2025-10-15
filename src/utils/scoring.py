@@ -100,11 +100,11 @@ def calculate_discount_score(deal: Deal) -> float:
     # Use logarithmic scaling for diminishing returns
     import math
     score = min(45, discount_pct * 0.9)
-    
-    # Bonus for very high discounts (70%+)
+
+    # Bonus for very high discounts (70%+), still respecting the cap
     if discount_pct >= 70:
-        score += 5
-    
+        score = min(45, score + 5)
+
     return round(score, 1)
 
 
@@ -212,6 +212,14 @@ def calculate_inventory_score(deal: Deal) -> float:
     
     # Coupon availability
     if deal.coupon_code:
+        score += 1.0
+
+    # Reward deals that have strong availability signals across the board
+    if (
+        deal.in_stock is True
+        and deal.sizes and len(deal.sizes) >= 3
+        and deal.coupon_code
+    ):
         score += 1.0
     
     return min(5.0, max(0.0, score))

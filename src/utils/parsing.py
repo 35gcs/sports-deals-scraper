@@ -6,7 +6,38 @@ from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin, urlparse
 
 import json
-from selectolax.parser import HTMLParser
+from html.parser import HTMLParser as _HTMLParser
+
+
+class _JSONLDScriptExtractor(_HTMLParser):
+    """Simple HTML parser to extract JSON-LD script contents."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._capture = False
+        self._buffer: List[str] = []
+        self.scripts: List[str] = []
+
+    def handle_starttag(self, tag: str, attrs):  # type: ignore[override]
+        if tag.lower() != "script":
+            return
+
+        attributes = {name.lower(): value for name, value in attrs}
+        if attributes.get("type", "").lower() == "application/ld+json":
+            self._capture = True
+            self._buffer = []
+
+    def handle_endtag(self, tag: str):  # type: ignore[override]
+        if tag.lower() == "script" and self._capture:
+            self._capture = False
+            script_content = "".join(self._buffer).strip()
+            if script_content:
+                self.scripts.append(script_content)
+            self._buffer = []
+
+    def handle_data(self, data: str):  # type: ignore[override]
+        if self._capture:
+            self._buffer.append(data)
 
 
 def clean_text(text: str) -> str:
@@ -82,24 +113,27 @@ def extract_brand_from_title(title: str) -> Optional[str]:
     """Extract brand name from product title."""
     if not title:
         return None
-    
+
     title = clean_text(title)
-    
-    # Common brand patterns
-    brand_patterns = [
-        r'^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)',  # Title case words at start
-        r'([A-Z][A-Z]+)',  # All caps (Nike, Adidas, etc.)
-        r'([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+',  # Title case followed by space
-    ]
-    
-    for pattern in brand_patterns:
-        match = re.search(pattern, title)
-        if match:
-            brand = match.group(1).strip()
-            # Filter out common non-brand words
-            if brand.lower() not in ['the', 'new', 'best', 'top', 'pro', 'elite']:
-                return brand
-    
+
+    words = title.split()
+    if not words:
+        return None
+
+    stopwords = {
+        'the', 'new', 'best', 'top', 'pro', 'elite', 'youth', 'kid', 'kids', 'jr', 'junior'
+    }
+
+    first_word = re.sub(r"[^A-Za-z]", "", words[0])
+    if first_word and first_word.lower() not in stopwords:
+        # Preserve original casing of the word in the title
+        return words[0]
+
+    # Fall back to searching for an uppercase brand name anywhere in the title
+    match = re.search(r"\b([A-Z]{2,})\b", title)
+    if match and match.group(1).lower() not in stopwords:
+        return match.group(1)
+
     return None
 
 
@@ -194,21 +228,22 @@ def extract_json_ld(html: str) -> List[Dict[str, Any]]:
     """Extract JSON-LD structured data from HTML."""
     if not html:
         return []
-    
-    parser = HTMLParser(html)
-    json_ld_scripts = parser.css('script[type="application/ld+json"]')
-    
-    json_ld_data = []
-    for script in json_ld_scripts:
+
+    extractor = _JSONLDScriptExtractor()
+    extractor.feed(html)
+
+    json_ld_data: List[Dict[str, Any]] = []
+    for script_content in extractor.scripts:
         try:
-            data = json.loads(script.text())
-            if isinstance(data, list):
-                json_ld_data.extend(data)
-            else:
-                json_ld_data.append(data)
+            data = json.loads(script_content)
         except (json.JSONDecodeError, ValueError):
             continue
-    
+
+        if isinstance(data, list):
+            json_ld_data.extend(item for item in data if isinstance(item, dict))
+        elif isinstance(data, dict):
+            json_ld_data.append(data)
+
     return json_ld_data
 
 
@@ -319,20 +354,21 @@ def extract_coupon_code(text: str) -> Optional[str]:
         return None
     
     text = clean_text(text)
-    
-    # Common coupon patterns
+    normalized = text.upper()
+
+    # Common coupon patterns in uppercase form
     coupon_patterns = [
-        r'(?:code|coupon)[:\s]*([A-Z0-9]{3,20})',
-        r'([A-Z0-9]{3,20})(?:\s+off|\s+discount)',
-        r'save\s+([A-Z0-9]{3,20})',
-        r'use\s+code\s+([A-Z0-9]{3,20})',
+        r'(?:CODE|COUPON)[\s:]*((?=[A-Z0-9]*\d)[A-Z0-9]{3,20})',
+        r'((?=[A-Z0-9]*\d)[A-Z0-9]{3,20})\s+(?:OFF|DISCOUNT)',
+        r'SAVE\s+(?:WITH\s+CODE\s+)?((?=[A-Z0-9]*\d)[A-Z0-9]{3,20})',
+        r'USE\s+CODE\s+((?=[A-Z0-9]*\d)[A-Z0-9]{3,20})',
     ]
-    
+
     for pattern in coupon_patterns:
-        match = re.search(pattern, text, re.IGNORECASE)
+        match = re.search(pattern, normalized)
         if match:
-            return match.group(1).upper()
-    
+            return match.group(1)
+
     return None
 
 
