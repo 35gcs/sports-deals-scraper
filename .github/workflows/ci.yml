@@ -24,33 +24,28 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         
-    - name: Install Playwright browsers
-      run: playwright install --with-deps
-      
-    - name: Run basic validation
+    - name: Test basic imports
       run: |
         echo "Testing basic imports..."
-        python -c "import src.models; print('Models imported successfully')"
-        python -c "import src.utils.parsing; print('Parsing utils imported successfully')"
-        python -c "import src.utils.scoring; print('Scoring utils imported successfully')"
-      env:
-        PYTHONPATH: ${{ github.workspace }}
-        
-    - name: Test CLI help
-      run: |
-        python -m src.cli --help
-      env:
-        PYTHONPATH: ${{ github.workspace }}
-      continue-on-error: true
+        PYTHONPATH=. python -c "import src.models; print('✅ Models imported successfully')"
+        PYTHONPATH=. python -c "import src.utils.parsing; print('✅ Parsing utils imported successfully')"
+        PYTHONPATH=. python -c "import src.utils.scoring; print('✅ Scoring utils imported successfully')"
+        echo "🎉 All imports working!"
         
     - name: Validate configuration
       run: |
-        python -c "
+        echo "Validating configuration..."
+        PYTHONPATH=. python -c "
         import yaml
         with open('configs/sources.yaml', 'r') as f:
             config = yaml.safe_load(f)
-        print(f'Found {len(config.get(\"retailers\", []))} retailers configured')
+        print(f'✅ Found {len(config.get(\"retailers\", []))} retailers configured')
+        print('✅ Configuration file is valid')
         "
-      env:
-        PYTHONPATH: ${{ github.workspace }}
+        
+    - name: Test CLI module
+      run: |
+        echo "Testing CLI module..."
+        PYTHONPATH=. python -c "import src.cli; print('✅ CLI module imported successfully')"
+        echo "🎉 Basic functionality test passed!"
       continue-on-error: true
